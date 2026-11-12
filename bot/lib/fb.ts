@@ -1,5 +1,5 @@
 import Firebird from "node-firebird";
-import type { AgentToolContext } from "@grok/agent-sdk";
+import type { ToolContext } from "@grok/agent-sdk";
 
 export type FbConfig = {
   host: string;
@@ -12,18 +12,19 @@ export type FbConfig = {
 
 const KV_KEY = "acesys.fb.config";
 
-export function saveConfig(ctx: AgentToolContext, config: FbConfig): void {
-  ctx.host.kv.set(KV_KEY, JSON.stringify(config));
+export async function saveConfig(
+  ctx: ToolContext,
+  config: FbConfig,
+): Promise<void> {
+  await ctx.host.kv.put(KV_KEY, config);
 }
 
-export function loadConfig(ctx: AgentToolContext): FbConfig | null {
-  const raw = ctx.host.kv.get(KV_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as FbConfig;
-  } catch {
-    return null;
-  }
+export async function loadConfig(
+  ctx: ToolContext,
+): Promise<FbConfig | null> {
+  const value = await ctx.host.kv.get(KV_KEY);
+  if (!value || typeof value !== "object") return null;
+  return value as FbConfig;
 }
 
 export function query<T = Record<string, unknown>>(

@@ -12,7 +12,6 @@ type Need = {
 };
 
 export default defineTool({
-  name: "list_needs",
   description: "List tracked Acesys needs for this session.",
   execution: "server",
   effect: "read",
@@ -20,15 +19,8 @@ export default defineTool({
     status: z.enum(["open", "done", "all"]).default("open"),
   }),
   async execute(input, ctx) {
-    const raw = ctx.host.kv.get(KV_KEY);
-    let needs: Need[] = [];
-    if (raw) {
-      try {
-        needs = JSON.parse(raw) as Need[];
-      } catch {
-        needs = [];
-      }
-    }
+    const raw = await ctx.host.kv.get(KV_KEY);
+    const needs: Need[] = Array.isArray(raw) ? (raw as Need[]) : [];
     const filtered =
       input.status === "all"
         ? needs

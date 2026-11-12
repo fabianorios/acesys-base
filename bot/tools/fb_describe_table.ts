@@ -3,7 +3,6 @@ import { defineTool } from "@grok/agent-sdk";
 import { loadConfig, query } from "../lib/fb";
 
 export default defineTool({
-  name: "fb_describe_table",
   description: "Describe columns of one Firebird table.",
   execution: "server",
   effect: "read",
@@ -11,7 +10,7 @@ export default defineTool({
     table: z.string().min(1),
   }),
   async execute(input, ctx) {
-    const config = loadConfig(ctx);
+    const config = await loadConfig(ctx);
     if (!config) {
       return { ok: false as const, error: "Not connected. Call fb_connect first." };
     }
