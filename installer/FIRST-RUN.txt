@@ -1,0 +1,29 @@
+Acesys Base - primeiro uso (após o Setup)
+
+O instalador NÃO inclui CURSOR_API_KEY nem senha do Firebird.
+Segredos ficam no vault DPAPI na máquina (não à prova de Administrador local).
+
+IMPORTANTE: rode o Bootstrap como o usuário Windows INTERATIVO (não em prompt
+"Executar como administrador"). DPAPI CurrentUser fica ligado a essa conta -
+a mesma que deve ser o ObjectName do serviço AcesysBase.
+
+Passos:
+
+1) Bootstrap do vault + senha do playground (≥12 caracteres):
+     (menu Iniciar → Acesys Base → Bootstrap vault)
+     ou:
+     powershell -NoProfile -ExecutionPolicy Bypass -File C:\acesys-base\scripts\vault.ps1 -Action Bootstrap
+
+2) No arquivo C:\acesys-base\.env, preencha só a conta do serviço:
+     ACESYS_SERVICE_USER=DOMINIO\seu_usuario
+     ACESYS_SERVICE_PASSWORD=...
+
+3) Ajuste o ObjectName do serviço e inicie:
+     C:\acesys-base\tools\nssm.exe edit AcesysBase
+     C:\acesys-base\tools\nssm.exe start AcesysBase
+
+4) Abra o login local:
+     http://127.0.0.1:3000/login
+
+Logs: C:\acesys-base\logs\
+Vault: %ProgramData%\AcesysBase\secrets.dpapi

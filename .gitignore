@@ -5,3 +5,13 @@ node_modules
 memory
 
 logs/
+data/
+*.dpapi
+secrets.dev.json
+secrets.json
+plaintext-secrets.json
+
+# Inno / pack outputs (Setup.exe comes from CI artifacts or local pack.ps1)
+installer/staging/
+installer/dist/
+installer/.cache/

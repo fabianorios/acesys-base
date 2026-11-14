@@ -2,9 +2,9 @@
 setlocal
 cd /d "%~dp0"
 if not exist "package.json" (
-  echo Put this start.bat inside C:\Users\fabia\agents\acesys-base and run again.
+  echo Run this from the acesys-base install folder.
   exit /b 1
 )
-echo Starting Acesys SQL playground (http://127.0.0.1:3000/playground) ...
-call npx --yes "@grok/agent-sdk@0.3.0" serve --dir . --mode single --dev
+echo Starting Acesys gate on http://127.0.0.1:3000/login ...
+call "%~dp0serve.cmd"
 endlocal

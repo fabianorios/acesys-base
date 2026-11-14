@@ -3,13 +3,12 @@ import { defineTool } from "@grok/agent-sdk";
 import { loadConfig, query } from "../lib/fb";
 
 export default defineTool({
-  name: "fb_list_tables",
   description: "List user tables in the connected Firebird database.",
   execution: "server",
   effect: "read",
   inputSchema: z.object({}),
   async execute(_input, ctx) {
-    const config = loadConfig(ctx);
+    const config = await loadConfig(ctx);
     if (!config) {
       return { ok: false as const, error: "Not connected. Call fb_connect first." };
     }
@@ -23,7 +22,7 @@ export default defineTool({
     );
     return {
       ok: true as const,
-      tables: rows.map((r) => r.table_name?.trim?.() ?? String(r.table_name)),
+      tables: rows.map((r) => String(r.table_name).trim()),
     };
   },
 });
