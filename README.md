@@ -4,6 +4,10 @@
 
 Run Agent SDK + playground + Cursor API key on the **Contabo VPS**. The client only opens an outbound SSH reverse tunnel to Firebird (`ops/tunnel/`). No Cursor key / MCP / playground on client disk for field use.
 
+- Architecture: [`docs/acesys-v2-tunnel-architecture.md`](docs/acesys-v2-tunnel-architecture.md)
+- Firebird checklist: [`docs/acesys-v2-firebird-checklist.md`](docs/acesys-v2-firebird-checklist.md)
+- VPS bootstrap: `ops/vps/bootstrap-acesys.sh`
+
 Local Windows Setup (v1) remains optional fallback — see open PR #1 packaging.
 
 ## Local / lab setup (developer machine or VPS)

@@ -6,7 +6,8 @@ Preferred field model: Agent SDK + playground + Cursor API key run on the **Cont
 |------|------|
 | `open-tunnel.bat` | Client template — fill placeholders; no secrets in git |
 | `sshd-acesys-tunnel.conf.snippet` | VPS OpenSSH sketch for a restricted tunnel user |
+| `vps-smoke-fb.sh` | On VPS: TCP + `node-firebird` SELECT via tunnel (needs `.env`) |
 
-Durable architecture + Firebird checklist live in the project store docs (`acesys-v2-tunnel-architecture.md`, `acesys-v2-firebird-checklist.md`), not in this folder.
+See also `../vps/` (bootstrap + Nginx sketch). Architecture: [`docs/acesys-v2-tunnel-architecture.md`](../../docs/acesys-v2-tunnel-architecture.md).
 
 **Do not** commit real VPS hostnames, IPs, passwords, or private keys.
