@@ -1,10 +1,10 @@
-Acesys Base — primeiro uso (após o Setup)
+Acesys Base - primeiro uso (após o Setup)
 
 O instalador NÃO inclui CURSOR_API_KEY nem senha do Firebird.
 Segredos ficam no vault DPAPI na máquina (não à prova de Administrador local).
 
 IMPORTANTE: rode o Bootstrap como o usuário Windows INTERATIVO (não em prompt
-"Executar como administrador"). DPAPI CurrentUser fica ligado a essa conta —
+"Executar como administrador"). DPAPI CurrentUser fica ligado a essa conta -
 a mesma que deve ser o ObjectName do serviço AcesysBase.
 
 Passos:

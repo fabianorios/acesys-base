@@ -1,6 +1,6 @@
 # Apply NON-SECRET service hints from .env to NSSM.
 # Secrets (CURSOR_API_KEY, ACESYS_FB_*, playground password) live in the DPAPI vault
-# and are loaded at runtime by scripts/host.mjs — never into AppEnvironmentExtra
+# and are loaded at runtime by scripts/host.mjs - never into AppEnvironmentExtra
 # (registry plaintext under the service account).
 param(
   [string]$Root = "C:\acesys-base",
@@ -19,7 +19,7 @@ if (-not (Test-Path $Nssm)) {
 & $Nssm set $Service AppEnvironmentExtra "ACESYS_VAULT_HINT=dpapi" | Out-Null
 
 if (-not (Test-Path $envPath)) {
-  Write-Host "No .env — secrets must come from DPAPI vault (scripts\vault.ps1 -Action Bootstrap)."
+  Write-Host "No .env - secrets must come from DPAPI vault (scripts\vault.ps1 -Action Bootstrap)."
   exit 0
 }
 

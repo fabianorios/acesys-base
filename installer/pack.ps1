@@ -6,8 +6,8 @@
 #   powershell -NoProfile -ExecutionPolicy Bypass -File installer\pack.ps1 -SkipInno
 #
 # Outputs:
-#   installer\staging\   — files copied into Setup
-#   installer\dist\AcesysBaseSetup.exe — when ISCC is available (unless -SkipInno)
+#   installer\staging\   - files copied into Setup
+#   installer\dist\AcesysBaseSetup.exe - when ISCC is available (unless -SkipInno)
 param(
   [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
   [string]$NodeVersion = "22.14.0",
@@ -63,7 +63,7 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot "FIRST-RUN.txt") -Destination $i
 $toolsDir = Join-Path $staging "tools"
 New-Item -ItemType Directory -Path $toolsDir | Out-Null
 $nssmSrc = Join-Path $RepoRoot "tools\nssm.exe"
-if (-not (Test-Path $nssmSrc)) { throw "Missing tools\nssm.exe in repo — required for Setup." }
+if (-not (Test-Path $nssmSrc)) { throw "Missing tools\nssm.exe in repo - required for Setup." }
 Copy-Item -LiteralPath $nssmSrc -Destination (Join-Path $toolsDir "nssm.exe") -Force
 
 if (-not $SkipNpm) {
@@ -116,7 +116,7 @@ Assert-NoSecretsInTree $staging
 Write-Step "Staging ready: $staging"
 
 if ($SkipInno) {
-  Write-Host "SkipInno set — not running ISCC."
+  Write-Host "SkipInno set - not running ISCC."
   exit 0
 }
 
@@ -127,7 +127,7 @@ $iscc = @(
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 
 if (-not $iscc) {
-  Write-Warning "ISCC.exe not found. Install Inno Setup 6, then re-run pack.ps1 — or use CI artifact."
+  Write-Warning "ISCC.exe not found. Install Inno Setup 6, then re-run pack.ps1 - or use CI artifact."
   Write-Host "Staging is ready for: installer\acesys-base.iss"
   exit 0
 }

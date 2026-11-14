@@ -77,7 +77,7 @@ if ($svc.Status -ne "Running") {
     exit 1
   }
 } else {
-  # Running but health failed — bounce once
+  # Running but health failed - bounce once
   try {
     if (Test-Path $Nssm) {
       & $Nssm restart $Service | Out-Null

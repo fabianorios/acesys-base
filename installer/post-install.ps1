@@ -20,7 +20,7 @@ if (-not (Test-Path $logs)) { New-Item -ItemType Directory -Path $logs | Out-Nul
 
 if (-not (Test-Path $envFile) -and (Test-Path $envExample)) {
   Copy-Item -LiteralPath $envExample -Destination $envFile -Force
-  Write-Step "Created .env from env.example (service user hints only — no secrets)."
+  Write-Step "Created .env from env.example (service user hints only - no secrets)."
 }
 
 $firstRun = Join-Path $AppDir "installer\FIRST-RUN.txt"
@@ -68,19 +68,19 @@ if ($user -and $pass) {
   Write-Step "Setting ObjectName to $user"
   & $nssm set $Service ObjectName $user $pass
   if ($LASTEXITCODE -ne 0) {
-    Write-Warning "ObjectName failed — set via nssm edit $Service after install."
+    Write-Warning "ObjectName failed - set via nssm edit $Service after install."
   }
 } else {
   Write-Step "ObjectName not set. After vault Bootstrap, set ACESYS_SERVICE_USER/PASSWORD and: nssm edit $Service"
 }
 
-# Do not start yet if vault missing — service would crash-loop.
+# Do not start yet if vault missing - service would crash-loop.
 $vault = Join-Path $env:ProgramData "AcesysBase\secrets.dpapi"
 if (Test-Path $vault) {
-  Write-Step "Vault present — starting service"
+  Write-Step "Vault present - starting service"
   & $nssm start $Service
 } else {
-  Write-Step "Vault missing — service installed but NOT started. Run vault.ps1 -Action Bootstrap first."
+  Write-Step "Vault missing - service installed but NOT started. Run vault.ps1 -Action Bootstrap first."
   & $nssm stop $Service 2>$null | Out-Null
 }
 
@@ -92,5 +92,5 @@ if ($RegisterWatchdog -eq "1") {
   }
 }
 
-Write-Step "Done. Read installer\FIRST-RUN.txt — bootstrap vault, then start service."
+Write-Step "Done. Read installer\FIRST-RUN.txt - bootstrap vault, then start service."
 exit 0

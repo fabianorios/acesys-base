@@ -1,4 +1,4 @@
-# Acesys secrets vault — DPAPI CurrentUser (prefer service ObjectName = interactive user).
+# Acesys secrets vault - DPAPI CurrentUser (prefer service ObjectName = interactive user).
 # Actions: Bootstrap | Protect | Unprotect | SetPassword
 # Never prints secret values except Unprotect (JSON to stdout for host.mjs only).
 param(
@@ -35,7 +35,7 @@ function Ensure-VaultDir {
   if (-not (Test-Path -LiteralPath $VaultDir)) {
     New-Item -ItemType Directory -Path $VaultDir -Force | Out-Null
   }
-  # Restrict ACL to current user + SYSTEM (Administrators remain able to take ownership — documented).
+  # Restrict ACL to current user + SYSTEM (Administrators remain able to take ownership - documented).
   $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
   icacls $VaultDir /inheritance:r | Out-Null
   icacls $VaultDir /grant:r "${user}:(OI)(CI)F" "NT AUTHORITY\SYSTEM:(OI)(CI)F" | Out-Null
@@ -100,7 +100,7 @@ function Write-Vault([hashtable]$obj) {
 
 function Read-VaultObject {
   if (-not (Test-Path -LiteralPath $VaultFile)) {
-    throw "Vault missing: $VaultFile — run Bootstrap first."
+    throw "Vault missing: $VaultFile - run Bootstrap first."
   }
   $blob = [IO.File]::ReadAllBytes($VaultFile)
   $plain = Unprotect-Bytes $blob
@@ -112,7 +112,7 @@ function Read-VaultObject {
 switch ($Action) {
   "Unprotect" {
     $obj = Read-VaultObject
-    # stdout only — consumed by host.mjs
+    # stdout only - consumed by host.mjs
     $obj | ConvertTo-Json -Compress -Depth 5
   }
 

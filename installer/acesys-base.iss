@@ -1,4 +1,4 @@
-; Acesys Base — Inno Setup (Admin). Secrets are NEVER baked into this Setup.
+; Acesys Base - Inno Setup (Admin). Secrets are NEVER baked into this Setup.
 ; Build: powershell -File installer\pack.ps1   (requires Inno Setup 6 + staged payload)
 ; Output: installer\dist\AcesysBaseSetup.exe
 
@@ -35,7 +35,7 @@ Name: "watchdog"; Description: "Schedule 2-minute watchdog task"; Flags: checked
 Name: "desktopicon"; Description: "Desktop shortcut (local login URL)"; Flags: unchecked
 
 [Files]
-; Payload from pack.ps1 — must not contain .env / *.dpapi / secrets
+; Payload from pack.ps1 - must not contain .env / *.dpapi / secrets
 Source: "staging\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
@@ -50,7 +50,7 @@ Filename: "powershell.exe"; \
   StatusMsg: "Configuring AcesysBase service..."; \
   Flags: runhidden waituntilterminated
 
-; Do NOT run vault Bootstrap from elevated Setup — CurrentUser DPAPI would bind to Admin.
+; Do NOT run vault Bootstrap from elevated Setup - CurrentUser DPAPI would bind to Admin.
 ; Use Start Menu "Bootstrap vault" (or FIRST-RUN.txt) as the interactive Windows user.
 
 Filename: "{cmd}"; \
