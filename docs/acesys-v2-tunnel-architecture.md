@@ -1,8 +1,8 @@
 # Acesys Base — arquitetura v2 (Contabo + túnel Firebird)
 
-Modelo operacional preferido a partir de 2026-11: inteligência, Agent SDK / playground e chave Cursor ficam na **máquina host do Acesys** (Contabo dedicada ou outra VPS/box do Fabiano — **não** a VPS de Gestão/Monitoramento/ERP, salvo decisão explícita de colocá-los juntos). O cliente **não** instala Cursor key, MCP nem playground em disco.
+Modelo operacional preferido a partir de 2026-11: inteligência, Agent SDK / playground e chave Cursor ficam na Contabo. O cliente **não** instala Cursor key, MCP nem playground em disco.
 
-**Não confundir com a VPS Gestão:** o host onde rodam Gestão, Monitoramento, ERP, MCP, 6x1 e eSocial **não** é o Acesysbase. Pedir SSH “desta” máquina ou copiar chave root dela está errado — abre o servidor errado. O túnel SSH do cliente aponta para o **host onde o `acesys-base` for instalado** (endereço ainda a definir pelo Fabiano).
+**Decisão (2026-11-13, America/Sao_Paulo):** Fabiano tem **um** servidor — instalar `acesys-base` **na mesma VPS** onde já estão Gestão, Monitoramento, ERP, MCP, 6x1 e eSocial. Mesmo host/SSH (porta 22); **não** copiar chave root. Criar user Linux separado (ex. `acesys-tunnel`) só para túnel de campo, e diretório próprio (ex. `/opt/acesys-base`) sem misturar com os outros serviços.
 
 Relacionado: checklist Firebird curto em [`acesys-v2-firebird-checklist.md`](./acesys-v2-firebird-checklist.md).  
 Histórico v1 (instalador local): [`acesys-service-install.md`](./acesys-service-install.md) e [PR #1](https://github.com/fabianorios/acesys-base/pull/1).
@@ -12,22 +12,22 @@ Histórico v1 (instalador local): [`acesys-service-install.md`](./acesys-service
 ## 1. Visão geral
 
 ```
-┌─────────────────────────────┐         outbound SSH -R          ┌──────────────────────────────┐
-│  Cliente (Windows / Acesys) │ ─────────────────────────────────► │  Host Acesys (a definir)      │
-│                             │                                    │  ≠ VPS Gestão/Monitoramento  │
-│  Firebird :3050             │   remote forward:                  │  localhost:13050  ← túnel     │
-│  .fdb no disco local        │   host:13050 → client:3050         │  acesys-base / Agent SDK      │
-│                             │                                    │  playground + Cursor API key  │
-│  Sem Cursor key             │                                    │  .env FB (user RO + senha)    │
-│  Sem MCP / playground       │                                    │  Nginx bearer ou loopback/VPN │
-└─────────────────────────────┘                                    └──────────────────────────────┘
+┌─────────────────────────────┐         outbound SSH -R          ┌──────────────────────────────────────┐
+│  Cliente (Windows / Acesys) │ ─────────────────────────────────► │  Contabo única (Gestão + Acesys)      │
+│                             │                                    │  Gestão / Monit / ERP / MCP / …       │
+│  Firebird :3050             │   remote forward:                  │  + /opt/acesys-base (novo)            │
+│  .fdb no disco local        │   VPS:13050 → client:3050          │  localhost:13050 ← túnel              │
+│                             │                                    │  playground + Cursor key (só Acesys)  │
+│  Sem Cursor key             │                                    │  user acesys-tunnel (só forward)      │
+│  Sem MCP / playground       │                                    │  Nginx bearer ou loopback/VPN         │
+└─────────────────────────────┘                                    └──────────────────────────────────────┘
 ```
 
 | Onde | O que fica |
 |------|------------|
 | **Cliente** | Só Firebird + túnel reverso de saída (SSH). Sem chave Cursor, sem MCP, sem playground. |
-| **Host Acesys** | `acesys-base`, playground, chave Cursor, senhas Firebird, proteção HTTP. **Não** é a VPS Gestão por padrão. |
-| **VPS Gestão** | Continua com Gestão / Monitoramento / ERP / etc. Sem `acesys-base` até decisão contrária. |
+| **Mesma Contabo** | Serviços já existentes **+** `acesys-base` em pasta própria; segredos FB/Cursor só no `.env` do Acesys. |
+| **SSH** | Mesmo `sshd`. User de gestão ≠ user de túnel de campo. Nunca reutilizar chave root no PC do cliente. |
 
 **Opção A (preferida, visitas curtas):** SSH reverse tunnel (`ssh -R`).  
 **Opção B (opcional, engajamentos longos):** Tailscale (ou VPN equivalente) — documentar quando o cliente já usa mesh estável; não é o caminho padrão de campo.
