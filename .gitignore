@@ -5,3 +5,8 @@ node_modules
 memory
 
 logs/
+data/
+*.dpapi
+secrets.dev.json
+secrets.json
+plaintext-secrets.json

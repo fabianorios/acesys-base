@@ -3,7 +3,7 @@
 param(
   [string]$Root = "C:\acesys-base",
   [string]$Service = "AcesysBase",
-  [string]$HealthUrl = "http://127.0.0.1:3000/v1/health",
+  [string]$HealthUrl = "http://127.0.0.1:3000/gate-health",
   [string]$Nssm = "C:\acesys-base\tools\nssm.exe"
 )
 

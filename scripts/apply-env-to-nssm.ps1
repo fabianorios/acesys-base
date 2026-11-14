@@ -1,5 +1,7 @@
-# Reads C:\acesys-base\.env and sets NSSM AppEnvironmentExtra for AcesysBase.
-# Only whitelisted keys are applied (Cursor + Firebird). Never logs secret values.
+# Apply NON-SECRET service hints from .env to NSSM.
+# Secrets (CURSOR_API_KEY, ACESYS_FB_*, playground password) live in the DPAPI vault
+# and are loaded at runtime by scripts/host.mjs — never into AppEnvironmentExtra
+# (registry plaintext under the service account).
 param(
   [string]$Root = "C:\acesys-base",
   [string]$Service = "AcesysBase",
@@ -8,47 +10,31 @@ param(
 
 $ErrorActionPreference = "Stop"
 $envPath = Join-Path $Root ".env"
-if (-not (Test-Path $envPath)) {
-  Write-Host "No .env at $envPath — skipping AppEnvironmentExtra."
-  exit 0
-}
 if (-not (Test-Path $Nssm)) {
   Write-Error "nssm missing: $Nssm"
   exit 1
 }
 
-$allowed = @(
-  "CURSOR_API_KEY",
-  "CURSOR_API_KEY_FILE",
-  "CURSOR_SERVICE_ACCOUNT_KEY",
-  "ACESYS_FB_HOST",
-  "ACESYS_FB_PORT",
-  "ACESYS_FB_DATABASE",
-  "ACESYS_FB_USER",
-  "ACESYS_FB_PASSWORD"
-)
+# Clear any previously stored secret AppEnvironmentExtra from older installs.
+& $Nssm set $Service AppEnvironmentExtra "ACESYS_VAULT_HINT=dpapi" | Out-Null
 
-$pairs = @()
+if (-not (Test-Path $envPath)) {
+  Write-Host "No .env — secrets must come from DPAPI vault (scripts\vault.ps1 -Action Bootstrap)."
+  exit 0
+}
+
+$allowed = @("ACESYS_SERVICE_USER")  # informational only; ObjectName is set by install.bat
+$found = @()
 Get-Content -LiteralPath $envPath -Encoding UTF8 | ForEach-Object {
   $line = $_.Trim()
   if (-not $line -or $line.StartsWith("#")) { return }
   $idx = $line.IndexOf("=")
   if ($idx -lt 1) { return }
   $key = $line.Substring(0, $idx).Trim()
-  $val = $line.Substring($idx + 1)
-  if ($allowed -contains $key -and $val -ne "") {
-    $pairs += ("{0}={1}" -f $key, $val)
-  }
+  if ($allowed -contains $key) { $found += $key }
 }
 
-if ($pairs.Count -eq 0) {
-  Write-Host "No whitelisted env keys found in .env — AppEnvironmentExtra unchanged."
-  exit 0
+Write-Host "AppEnvironmentExtra cleared of secrets. Vault loads at runtime via host.mjs."
+if ($found.Count -gt 0) {
+  Write-Host ("Noted non-secret keys in .env: {0}" -f ($found -join ", "))
 }
-
-& $Nssm set $Service AppEnvironmentExtra $pairs
-if ($LASTEXITCODE -ne 0) {
-  Write-Error "nssm set AppEnvironmentExtra failed ($LASTEXITCODE)"
-  exit $LASTEXITCODE
-}
-Write-Host ("AppEnvironmentExtra set with {0} key(s) from .env (values not shown)." -f $pairs.Count)

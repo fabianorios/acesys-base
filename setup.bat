@@ -14,10 +14,10 @@ if errorlevel 1 exit /b 1
 echo [3/3] validate...
 call npx --yes "@grok/agent-sdk@0.3.0" validate --dir .
 if errorlevel 1 exit /b 1
-if not exist ".env" if exist "env.example" (
-  copy /Y "env.example" ".env" >nul
-  echo Created .env from env.example — edit CURSOR_API_KEY and ACESYS_FB_*.
-)
 echo.
-echo OK. Dev: start.bat  ^|  Service: install.bat ^(Admin^)
+echo Next on Windows:
+echo   1. powershell -File scripts\vault.ps1 -Action Bootstrap
+echo   2. set ACESYS_SERVICE_USER / PASSWORD in .env
+echo   3. install.bat ^(Admin^)  or  start.bat
+echo Login: http://127.0.0.1:3000/login
 endlocal

@@ -1,12 +1,5 @@
 @echo off
-REM Entry point for NSSM / interactive start. Loopback only; secrets from .env.
+REM NSSM / interactive entry: decrypt DPAPI vault in-process, gate on :3000, agent on :3001.
 cd /d "%~dp0"
-if exist ".env" (
-  for /f "usebackq eol=# tokens=1,* delims==" %%A in (".env") do (
-    if not "%%A"=="" set "%%A=%%B"
-  )
-)
-if not defined CURSOR_API_KEY (
-  echo WARNING: CURSOR_API_KEY missing. Set it in .env for model turns under the service account.
-)
-npx --yes "@grok/agent-sdk@0.3.0" serve --dir . --mode single --dev --host 127.0.0.1 --port 3000
+where node >nul 2>&1 || (echo node not found & exit /b 1)
+node "%~dp0scripts\host.mjs"

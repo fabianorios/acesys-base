@@ -1,11 +1,12 @@
 @echo off
 setlocal EnableExtensions
 REM Install / refresh Acesys Base as a Windows service (NSSM).
-REM Run as Administrator. Secrets stay in local .env only.
+REM Secrets live in DPAPI vault — not in AppEnvironmentExtra / plaintext .env.
 set "ROOT=C:\acesys-base"
 set "REPO=https://github.com/fabianorios/acesys-base.git"
 set "SVC=AcesysBase"
 set "NSSM=%ROOT%\tools\nssm.exe"
+set "VAULT=%ProgramData%\AcesysBase\secrets.dpapi"
 
 net session >nul 2>&1
 if errorlevel 1 (
@@ -40,18 +41,24 @@ if errorlevel 1 (popd & exit /b 1)
 call npm install node-firebird
 if errorlevel 1 (popd & exit /b 1)
 
-if not exist ".env" (
-  if exist "env.example" copy /Y "env.example" ".env" >nul
-  echo Created .env — edit CURSOR_API_KEY and ACESYS_FB_* before starting.
-)
+if not exist ".env" if exist "env.example" copy /Y "env.example" ".env" >nul
 
-REM Load optional service-account overrides from .env into this shell
+REM Load optional service-account overrides from .env (ObjectName only)
 if exist ".env" (
   for /f "usebackq eol=# tokens=1,* delims==" %%A in (".env") do (
     if /I "%%A"=="ACESYS_SERVICE_USER" set "ACESYS_SERVICE_USER=%%B"
     if /I "%%A"=="ACESYS_SERVICE_PASSWORD" set "ACESYS_SERVICE_PASSWORD=%%B"
-    if /I "%%A"=="CURSOR_API_KEY" set "HAS_CURSOR_KEY=1"
   )
+)
+
+if not exist "%VAULT%" (
+  echo.
+  echo DPAPI vault missing: %VAULT%
+  echo Run as the interactive Windows user who will own CurrentUser DPAPI:
+  echo   powershell -NoProfile -ExecutionPolicy Bypass -File "%ROOT%\scripts\vault.ps1" -Action Bootstrap
+  echo Then re-run install.bat.
+  popd
+  exit /b 1
 )
 
 if not exist "tools" mkdir "tools"
@@ -73,7 +80,7 @@ if not exist "%ROOT%\serve.cmd" (
 "%NSSM%" install "%SVC%" "%ComSpec%" "/c" "%ROOT%\serve.cmd"
 "%NSSM%" set "%SVC%" AppDirectory "%ROOT%"
 "%NSSM%" set "%SVC%" DisplayName "Acesys Base Agent"
-"%NSSM%" set "%SVC%" Description "Outbound-only Agent SDK host; Firebird tools bridge local DB; playground on 127.0.0.1"
+"%NSSM%" set "%SVC%" Description "Outbound-only Agent SDK host; DPAPI vault; playground login on 127.0.0.1"
 "%NSSM%" set "%SVC%" Start SERVICE_AUTO_START
 "%NSSM%" set "%SVC%" AppStdout "%ROOT%\logs\service.out.log"
 "%NSSM%" set "%SVC%" AppStderr "%ROOT%\logs\service.err.log"
@@ -84,28 +91,32 @@ if not exist "%ROOT%\serve.cmd" (
 
 if not exist "%ROOT%\logs" mkdir "%ROOT%\logs"
 
-REM Prefer interactive / logon user. Local System cannot use agent-sdk login profile.
+REM Prefer interactive / logon user so CurrentUser DPAPI decrypt works.
 if defined ACESYS_SERVICE_USER (
   if defined ACESYS_SERVICE_PASSWORD (
     echo Setting ObjectName to %ACESYS_SERVICE_USER% ...
     "%NSSM%" set "%SVC%" ObjectName "%ACESYS_SERVICE_USER%" "%ACESYS_SERVICE_PASSWORD%"
     if errorlevel 1 (
-      echo Failed to set ObjectName. Falling back to Local System + AppEnvironmentExtra.
+      echo Failed to set ObjectName. Aborting — CurrentUser vault needs that account.
+      popd
+      exit /b 1
     )
   ) else (
-    echo ACESYS_SERVICE_USER set but ACESYS_SERVICE_PASSWORD missing — keeping default account.
-    echo Prefer: set both in .env, or run: nssm edit %SVC%
+    echo ACESYS_SERVICE_USER set but ACESYS_SERVICE_PASSWORD missing.
+    echo Set both in .env ^(service account only^) or: nssm edit %SVC%
+    popd
+    exit /b 1
   )
 ) else (
-  echo No ACESYS_SERVICE_USER in .env — service account stays Local System.
-  echo Prefer the interactive Windows user via ACESYS_SERVICE_USER / ACESYS_SERVICE_PASSWORD,
-  echo and always set CURSOR_API_KEY in .env ^(applied via AppEnvironmentExtra^).
+  echo.
+  echo ERROR: ACESYS_SERVICE_USER / ACESYS_SERVICE_PASSWORD required.
+  echo CurrentUser DPAPI vault must be decrypted by the same Windows user who ran Bootstrap.
+  echo Put them in %ROOT%\.env then re-run.
+  popd
+  exit /b 1
 )
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%ROOT%\scripts\apply-env-to-nssm.ps1" -Root "%ROOT%" -Service "%SVC%" -Nssm "%NSSM%"
-if errorlevel 1 (
-  echo WARNING: could not apply .env to AppEnvironmentExtra
-)
 
 "%NSSM%" start "%SVC%"
 if errorlevel 1 (
@@ -119,10 +130,8 @@ if exist "%ROOT%\scripts\install-watchdog.cmd" (
 )
 
 echo.
-echo OK. Playground ^(loopback only^): http://127.0.0.1:3000/playground
-echo Service: %SVC%
-echo Logs: %ROOT%\logs\
-if not defined HAS_CURSOR_KEY echo Reminder: set CURSOR_API_KEY in %ROOT%\.env then re-run apply-env or install.bat
-echo Firebird DSN stays in local .env — never commit .env
+echo OK. Login: http://127.0.0.1:3000/login
+echo Service: %SVC%  Logs: %ROOT%\logs\
+echo Vault: %VAULT% ^(DPAPI CurrentUser — not admin-proof^)
 popd
 endlocal
