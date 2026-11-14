@@ -336,32 +336,48 @@ function startGate({ passwordHash, sessionSecret, bearer }) {
 }
 
 function spawnServe(bearer) {
-  const npx = process.platform === "win32" ? "npx.cmd" : "npx";
-  const child = spawn(
-    npx,
-    [
-      "--yes",
-      "@grok/agent-sdk@0.3.0",
-      "serve",
-      "--dir",
-      ROOT,
-      "--mode",
-      "single",
-      "--dev",
-      "--host",
-      PUBLIC_HOST,
-      "--port",
-      String(UPSTREAM_PORT),
-      "--bearer-token",
-      bearer,
-    ],
-    {
-      cwd: ROOT,
-      env: process.env,
-      stdio: "inherit",
-      shell: process.platform === "win32",
-    },
+  const serveArgs = [
+    "serve",
+    "--dir",
+    ROOT,
+    "--mode",
+    "single",
+    "--dev",
+    "--host",
+    PUBLIC_HOST,
+    "--port",
+    String(UPSTREAM_PORT),
+    "--bearer-token",
+    bearer,
+  ];
+
+  // Prefer the payload-local CLI (Setup.exe / npm install); fall back to npx.
+  const localCli = join(
+    ROOT,
+    "node_modules",
+    "@grok",
+    "agent-sdk",
+    "dist",
+    "bin",
+    "agent-serve.js",
   );
+  const child = existsSync(localCli)
+    ? spawn(process.execPath, [localCli, ...serveArgs], {
+        cwd: ROOT,
+        env: process.env,
+        stdio: "inherit",
+      })
+    : spawn(
+        process.platform === "win32" ? "npx.cmd" : "npx",
+        ["--yes", "@grok/agent-sdk@0.3.0", ...serveArgs],
+        {
+          cwd: ROOT,
+          env: process.env,
+          stdio: "inherit",
+          shell: process.platform === "win32",
+        },
+      );
+
   child.on("exit", (code) => {
     console.error(`[acesys-host] agent-sdk exited (${code})`);
     process.exit(code ?? 1);

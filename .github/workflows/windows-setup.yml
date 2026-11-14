@@ -1,0 +1,57 @@
+name: Windows Setup
+
+on:
+  push:
+    branches: [main, "cursor/**"]
+    paths:
+      - "installer/**"
+      - "bot/**"
+      - "scripts/**"
+      - "package.json"
+      - "package-lock.json"
+      - "serve.cmd"
+      - ".github/workflows/windows-setup.yml"
+  pull_request:
+    paths:
+      - "installer/**"
+      - "bot/**"
+      - "scripts/**"
+      - "package.json"
+      - "package-lock.json"
+      - "serve.cmd"
+      - ".github/workflows/windows-setup.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-setup:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Pack payload + build AcesysBaseSetup.exe
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File installer\pack.ps1
+          if (-not (Test-Path installer\dist\AcesysBaseSetup.exe)) {
+            throw "AcesysBaseSetup.exe was not produced"
+          }
+
+      - name: Upload Setup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AcesysBaseSetup
+          path: installer/dist/AcesysBaseSetup.exe
+          if-no-files-found: error
