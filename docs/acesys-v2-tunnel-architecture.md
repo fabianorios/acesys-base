@@ -2,7 +2,9 @@
 
 Modelo operacional preferido a partir de 2026-11: inteligência, Agent SDK / playground e chave Cursor ficam na Contabo. O cliente **não** instala Cursor key, MCP nem playground em disco.
 
-**Decisão (2026-11-13, America/Sao_Paulo):** Fabiano tem **um** servidor — instalar `acesys-base` **na mesma VPS** onde já estão Gestão, Monitoramento, ERP, MCP, 6x1 e eSocial. Mesmo host/SSH (porta 22); **não** copiar chave root. Criar user Linux separado (ex. `acesys-tunnel`) só para túnel de campo, e diretório próprio (ex. `/opt/acesys-base`) sem misturar com os outros serviços.
+**Decisão (2026-11-13, America/Sao_Paulo):** Fabiano tem **um** servidor — instalar `acesys-base` **na mesma VPS** onde já estão Gestão, Monitoramento, ERP, MCP, 6x1 e eSocial. Mesmo host/SSH (porta 22); **não** copiar chave root. User Linux `acesys-tunnel` só para túnel de campo; diretório próprio (ex. `/opt/acesys-base`).
+
+**Túnel na VPS (feito):** `acesys-tunnel` só chave nova; só forward `127.0.0.1:13050`; shell/senha/outras portas bloqueados (teste: 22 negado). Privada na VPS em `/root/infra/acesys-tunnel/id_ed25519` (600); fingerprint `SHA256:79gOXM6whOD0JxLLeFMp8cfjM1GsTANpdJbAIySg45w`. Sem privada no git/chat.
 
 Relacionado: checklist Firebird curto em [`acesys-v2-firebird-checklist.md`](./acesys-v2-firebird-checklist.md).  
 Histórico v1 (instalador local): [`acesys-service-install.md`](./acesys-service-install.md) e [PR #1](https://github.com/fabianorios/acesys-base/pull/1).
