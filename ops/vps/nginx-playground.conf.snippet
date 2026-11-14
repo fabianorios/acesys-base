@@ -1,0 +1,29 @@
+# Acesys v2 — sketch: protect playground/MCP on Contabo (no real secrets).
+# Prefer: bind agent to 127.0.0.1 and terminate TLS + auth here, or VPN-only.
+# Do not expose unauthenticated playground on 0.0.0.0.
+
+# server {
+#   listen 443 ssl http2;
+#   server_name REPLACE_WITH_PUBLIC_OR_VPN_NAME;
+#
+#   # ssl_certificate     /path/to/fullchain.pem;
+#   # ssl_certificate_key /path/to/privkey.pem;
+#
+#   # Option 1 — bearer (set a long random token; store only on VPS)
+#   # location / {
+#   #   if ($http_authorization != "Bearer REPLACE_WITH_LONG_TOKEN") { return 401; }
+#   #   proxy_pass http://127.0.0.1:3000;
+#   #   proxy_http_version 1.1;
+#   #   proxy_set_header Host $host;
+#   # }
+#
+#   # Option 2 — allow only Tailscale / private CIDR (preferred for long engajamentos)
+#   # allow 100.64.0.0/10;
+#   # deny all;
+#   # location / {
+#   #   proxy_pass http://127.0.0.1:3000;
+#   # }
+# }
+
+# Loopback-only (no public Nginx): SSH -L local:3000:127.0.0.1:3000 operator@VPS
+# then open http://127.0.0.1:3000/playground from the operator machine.
