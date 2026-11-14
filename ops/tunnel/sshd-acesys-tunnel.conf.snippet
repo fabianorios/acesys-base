@@ -1,0 +1,23 @@
+# Acesys v2 — OpenSSH sketch for a tunnel-only user on the Contabo VPS.
+# Copy ideas into /etc/ssh/sshd_config.d/ (do not drop this file blindly).
+# Run: sudo sshd -t && sudo systemctl reload ssh
+# No real hostnames, IPs, or passwords belong in this repo.
+
+# Match User acesys-tunnel
+#   # Key-only auth recommended
+#   PasswordAuthentication no
+#   # Allow reverse forwards only to loopback Firebird mirror port
+#   AllowTcpForwarding remote
+#   PermitOpen 127.0.0.1:13050
+#   # OpenSSH 8+: prefer binding the remote listen address to loopback
+#   # PermitListen 127.0.0.1:13050
+#   AllowAgentForwarding no
+#   X11Forwarding no
+#   PermitTunnel no
+#   # No interactive shell
+#   ForceCommand /bin/false
+#   # Optional: restrict source addresses once known
+#   # AllowUsers acesys-tunnel@OPERATOR_CIDR
+
+# Also ensure GatewayPorts does not publish 13050 on 0.0.0.0 unless you
+# intentionally terminate TLS/VPN in front. Prefer 127.0.0.1 only.
